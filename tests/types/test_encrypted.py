@@ -89,7 +89,7 @@ def test_key():
 
 @pytest.fixture
 def user_name():
-    return u'someone'
+    return u'someone£'
 
 
 @pytest.fixture

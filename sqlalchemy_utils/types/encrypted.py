@@ -69,7 +69,9 @@ class AesEngine(EncryptionDecryptionBaseEngine):
     def encrypt(self, value):
         if not isinstance(value, six.string_types):
             value = repr(value)
-        if isinstance(value, six.text_type):
+        if isinstance(value, unicode):
+            value = unicode(value)
+        elif isinstance(value, six.text_type):
             value = str(value)
         value = value.encode('utf-8')
         value = self._pad(value)
@@ -79,7 +81,9 @@ class AesEngine(EncryptionDecryptionBaseEngine):
         return encrypted
 
     def decrypt(self, value):
-        if isinstance(value, six.text_type):
+        if isinstance(value, unicode):
+            value = unicode(value)
+        elif isinstance(value, six.text_type):
             value = str(value)
         decryptor = self.cipher.decryptor()
         decrypted = base64.b64decode(value)
@@ -100,14 +104,18 @@ class FernetEngine(EncryptionDecryptionBaseEngine):
     def encrypt(self, value):
         if not isinstance(value, six.string_types):
             value = repr(value)
-        if isinstance(value, six.text_type):
+        if isinstance(value, unicode):
+            value = unicode(value)
+        elif isinstance(value, six.text_type):
             value = str(value)
         value = value.encode('utf-8')
         encrypted = self.fernet.encrypt(value)
         return encrypted
 
     def decrypt(self, value):
-        if isinstance(value, six.text_type):
+        if isinstance(value, unicode):
+            value = unicode(value)
+        elif isinstance(value, six.text_type):
             value = str(value)
         decrypted = self.fernet.decrypt(value)
         if not isinstance(decrypted, six.string_types):
@@ -252,6 +260,9 @@ class EncryptedType(TypeDecorator, ScalarCoercible):
                 elif issubclass(type_, (datetime.date, datetime.time)):
                     value = value.isoformat()
 
+                elif issubclass(type_, unicode):
+                    value = value.encode('utf-8')
+
             return self.engine.encrypt(value)
 
     def process_result_value(self, value, dialect):
@@ -287,6 +298,9 @@ class EncryptedType(TypeDecorator, ScalarCoercible):
                     return datetime.datetime.strptime(
                         decrypted_value, '%Y-%m-%d'
                     ).date()
+
+                elif issubclass(type_, unicode):
+                    return decrypted_value.decode('utf-8')
 
                 # Handle all others
                 return self.underlying_type.python_type(decrypted_value)
