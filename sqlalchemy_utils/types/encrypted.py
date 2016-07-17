@@ -30,7 +30,7 @@ class EncryptionDecryptionBaseEngine(object):
 
     def _update_key(self, key):
         if isinstance(key, six.string_types):
-            key = key.encode()
+            key = key.encode('utf-8')
         digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
         digest.update(key)
         engine_key = digest.finalize()
@@ -71,7 +71,7 @@ class AesEngine(EncryptionDecryptionBaseEngine):
             value = repr(value)
         if isinstance(value, six.text_type):
             value = str(value)
-        value = value.encode()
+        value = value.encode('utf-8')
         value = self._pad(value)
         encryptor = self.cipher.encryptor()
         encrypted = encryptor.update(value) + encryptor.finalize()
@@ -102,7 +102,7 @@ class FernetEngine(EncryptionDecryptionBaseEngine):
             value = repr(value)
         if isinstance(value, six.text_type):
             value = str(value)
-        value = value.encode()
+        value = value.encode('utf-8')
         encrypted = self.fernet.encrypt(value)
         return encrypted
 
